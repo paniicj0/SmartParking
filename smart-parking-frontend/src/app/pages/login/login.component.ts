@@ -2,6 +2,7 @@ import { RouterLink } from '@angular/router';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -14,7 +15,7 @@ export class LoginComponent {
   email = '';
   password = '';
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   onSubmit() {
     const loginData = {
@@ -25,6 +26,7 @@ export class LoginComponent {
     this.authService.login(loginData).subscribe({
       next: (response) => {
         console.log('Uspešan login:', response);
+        this.router.navigate(['/user-home']);
 
         this.authService.saveToken(response.token);
         console.log('Token sačuvan u localStorage');

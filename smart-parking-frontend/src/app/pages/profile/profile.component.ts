@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { UserProfile } from '../../models/user-profile';
 import { Vehicle } from '../../models/vehicle';
+import { HeaderComponent } from '../../shared/header/header.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HeaderComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })

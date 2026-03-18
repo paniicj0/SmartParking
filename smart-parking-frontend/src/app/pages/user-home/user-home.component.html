@@ -1,0 +1,115 @@
+<app-header></app-header>
+<div class="page-container">
+    <h1>Korisnička početna</h1>
+  
+    <div *ngIf="successMessage" class="message success">
+      {{ successMessage }}
+    </div>
+  
+    <div *ngIf="errorMessage" class="message error">
+      {{ errorMessage }}
+    </div>
+  
+    <div class="content-grid">
+      <div class="card">
+        <h2>Nova rezervacija</h2>
+  
+        <form [formGroup]="reservationForm" class="reservation-form">
+          <label for="vehicle">Vozilo</label>
+          <select id="vehicle" formControlName="vehicle_id">
+            <option value="">Izaberi vozilo</option>
+            <option *ngFor="let vehicle of vehicles" [value]="vehicle.id">
+              {{ vehicle.license_plate }} {{ vehicle.name || '' }}
+            </option>
+          </select>
+  
+          <label for="startTime">Početak</label>
+          <input id="startTime" type="datetime-local" formControlName="start_time" />
+  
+          <label for="endTime">Kraj</label>
+          <input id="endTime" type="datetime-local" formControlName="end_time" />
+  
+          <button type="button" (click)="checkAvailability()">
+            Proveri dostupnost
+          </button>
+        </form>
+  
+        <div *ngIf="loadingVehicles" class="info-text">
+          Učitavanje vozila...
+        </div>
+  
+        <div *ngIf="loadingSpots" class="info-text">
+          Učitavanje parking mesta...
+        </div>
+  
+        <div *ngIf="spots.length > 0" class="parking-section">
+          <h3>Šema parkinga</h3>
+  
+          <div class="parking-grid">
+            <div
+              *ngFor="let spot of spots"
+              class="spot-box"
+              [ngClass]="{
+                'available': spot.available && spot.is_active,
+                'occupied': !spot.available && spot.is_active,
+                'inactive': !spot.is_active,
+                'selected': selectedSpot?.id === spot.id
+              }"
+              (click)="selectSpot(spot)"
+            >
+              <div class="spot-label">{{ spot.label }}</div>
+              <div class="spot-zone">{{ spot.zone }}</div>
+            </div>
+          </div>
+  
+          <div class="selected-info" *ngIf="selectedSpot">
+            Izabrano mesto:
+            <strong>{{ selectedSpot.label }}</strong>
+            (zona {{ selectedSpot.zone }})
+          </div>
+  
+          <button
+            type="button"
+            class="reserve-btn"
+            [disabled]="!selectedSpot || submittingReservation"
+            (click)="reserve()"
+          >
+            {{ submittingReservation ? 'Čuvanje...' : 'Rezerviši mesto' }}
+          </button>
+        </div>
+      </div>
+  
+      <div class="card">
+        <h2>Moje rezervacije</h2>
+  
+        <div *ngIf="loadingReservations" class="info-text">
+          Učitavanje rezervacija...
+        </div>
+  
+        <div *ngIf="!loadingReservations && myReservations.length === 0" class="info-text">
+          Trenutno nemaš rezervacija.
+        </div>
+  
+        <div class="reservation-list" *ngIf="myReservations.length > 0">
+          <div class="reservation-item" *ngFor="let reservation of myReservations">
+            <div class="reservation-main">
+              <div><strong>Mesto:</strong> {{ reservation.parking_spot_label }}</div>
+              <div><strong>Zona:</strong> {{ reservation.zone }}</div>
+              <div><strong>Od:</strong> {{ formatDateForDisplay(reservation.start_time) }}</div>
+              <div><strong>Do:</strong> {{ formatDateForDisplay(reservation.end_time) }}</div>
+              <div><strong>Status:</strong> {{ reservation.status }}</div>
+            </div>
+  
+            <button
+              *ngIf="reservation.status === 'Confirmed'"
+              type="button"
+              class="cancel-btn"
+              (click)="cancelReservation(reservation.id)"
+            >
+              Otkaži
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

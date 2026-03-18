@@ -1,0 +1,161 @@
+.page-container {
+    padding: 24px;
+  }
+  
+  h1 {
+    margin-bottom: 24px;
+  }
+  
+  .content-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 24px;
+  }
+  
+  .card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  }
+  
+  .reservation-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .reservation-form input,
+  .reservation-form select,
+  .reservation-form button,
+  .reserve-btn,
+  .cancel-btn {
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  
+  .reservation-form input,
+  .reservation-form select {
+    border: 1px solid #ccc;
+  }
+  
+  .reservation-form button,
+  .reserve-btn,
+  .cancel-btn {
+    border: none;
+    cursor: pointer;
+  }
+  
+  .message {
+    margin-bottom: 16px;
+    padding: 12px;
+    border-radius: 8px;
+  }
+  
+  .success {
+    background-color: #e7f7eb;
+    color: #1d6b35;
+  }
+  
+  .error {
+    background-color: #fdeaea;
+    color: #a12626;
+  }
+  
+  .info-text {
+    margin-top: 12px;
+    color: #666;
+  }
+  
+  .parking-section {
+    margin-top: 20px;
+  }
+  
+  .parking-grid {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: repeat(4, 80px);
+    gap: 12px;
+  }
+  
+  .spot-box {
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 600;
+    border: 2px solid #333;
+    user-select: none;
+  }
+  
+  .available {
+    background-color: #48c774;
+    color: white;
+  }
+  
+  .occupied {
+    background-color: #f14668;
+    color: white;
+    cursor: not-allowed;
+  }
+  
+  .inactive {
+    background-color: #b5b5b5;
+    color: white;
+    cursor: not-allowed;
+  }
+  
+  .selected {
+    outline: 4px solid #3273dc;
+  }
+  
+  .spot-label {
+    font-size: 16px;
+  }
+  
+  .spot-zone {
+    font-size: 12px;
+  }
+  
+  .selected-info {
+    margin-top: 16px;
+  }
+  
+  .reserve-btn {
+    margin-top: 16px;
+    background-color: #3273dc;
+    color: white;
+  }
+  
+  .cancel-btn {
+    background-color: #f14668;
+    color: white;
+    min-width: 90px;
+  }
+  
+  .reservation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .reservation-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 14px;
+    gap: 12px;
+  }
+  
+  .reservation-main {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }

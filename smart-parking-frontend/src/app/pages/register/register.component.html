@@ -1,0 +1,68 @@
+<div class="register-container">
+    <h2>Registracija</h2>
+  
+    <form (ngSubmit)="onSubmit()">
+      <input
+        type="text"
+        placeholder="Ime"
+        [(ngModel)]="first_name"
+        name="first_name"
+        required
+      />
+  
+      <input
+        type="text"
+        placeholder="Prezime"
+        [(ngModel)]="last_name"
+        name="last_name"
+        required
+      />
+  
+      <input
+        type="text"
+        placeholder="Broj telefona"
+        [(ngModel)]="phone_number"
+        name="phone_number"
+        required
+      />
+  
+      <input
+        type="email"
+        placeholder="Email"
+        [(ngModel)]="email"
+        name="email"
+        required
+      />
+  
+      <input
+        type="password"
+        placeholder="Lozinka"
+        [(ngModel)]="password"
+        name="password"
+        required
+      />
+  
+      <input
+        type="password"
+        placeholder="Potvrdite lozinku"
+        [(ngModel)]="confirmPassword"
+        name="confirmPassword"
+        required
+      />
+  
+      <button type="submit">Registruj se</button>
+    </form>
+  
+    @if (errorMessage) {
+      <p class="error-message">{{ errorMessage }}</p>
+    }
+  
+    @if (successMessage) {
+      <p class="success-message">{{ successMessage }}</p>
+    }
+  
+    <p>
+      Već imate nalog?
+      <a routerLink="/login">Prijavite se</a>
+    </p>
+  </div>

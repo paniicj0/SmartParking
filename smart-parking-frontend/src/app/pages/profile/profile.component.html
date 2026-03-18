@@ -1,0 +1,242 @@
+<div class="profile-container">
+  <h2>Moj profil</h2>
+
+  <div *ngIf="loading">
+    <p>Učitavanje profila...</p>
+  </div>
+
+  <div *ngIf="errorMessage && !loading" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="successMessage && !loading" class="success-message">
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="user && !loading" class="profile-layout">
+    
+    <!-- LEVA STRANA -->
+    <div class="left-column">
+      <div class="profile-card">
+        <h3>Informacije o korisniku</h3>
+
+        <div *ngIf="!editMode">
+          <div class="profile-row">
+            <span class="label">Ime:</span>
+            <span class="value">{{ user.first_name }}</span>
+          </div>
+
+          <div class="profile-row">
+            <span class="label">Prezime:</span>
+            <span class="value">{{ user.last_name }}</span>
+          </div>
+
+          <div class="profile-row">
+            <span class="label">Email:</span>
+            <span class="value">{{ user.email }}</span>
+          </div>
+
+          <div class="profile-row">
+            <span class="label">Telefon:</span>
+            <span class="value">{{ user.phone_number || 'Nije unet' }}</span>
+          </div>
+
+          <div class="profile-row">
+            <span class="label">Status naloga:</span>
+            <span class="value">{{ user.is_active ? 'Aktivan' : 'Neaktivan' }}</span>
+          </div>
+
+          <div class="button-group">
+            <button class="edit-btn" (click)="enableEdit()">Izmeni profil</button>
+          </div>
+        </div>
+
+        <div *ngIf="editMode" class="edit-form">
+          <div class="form-group">
+            <label for="first_name">Ime</label>
+            <input
+              id="first_name"
+              type="text"
+              [(ngModel)]="formData.first_name"
+              name="first_name"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="last_name">Prezime</label>
+            <input
+              id="last_name"
+              type="text"
+              [(ngModel)]="formData.last_name"
+              name="last_name"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              [value]="user.email"
+              readonly
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="phone_number">Telefon</label>
+            <input
+              id="phone_number"
+              type="text"
+              [(ngModel)]="formData.phone_number"
+              name="phone_number"
+            />
+          </div>
+
+          <div class="button-group">
+            <button class="save-btn" (click)="saveChanges()">Sačuvaj izmene</button>
+            <button class="cancel-btn" (click)="cancelEdit()">Otkaži</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DESNA STRANA -->
+    <div class="right-column">
+      <div class="password-section">
+        <h3>Lozinka</h3>
+
+        <div *ngIf="!passwordEditMode">
+          <button class="edit-btn" (click)="enablePasswordEdit()">
+            Izmeni lozinku
+          </button>
+        </div>
+
+        <div *ngIf="passwordEditMode">
+          <div *ngIf="passwordErrorMessage" class="error-message">
+            {{ passwordErrorMessage }}
+          </div>
+
+          <div *ngIf="passwordSuccessMessage" class="success-message">
+            {{ passwordSuccessMessage }}
+          </div>
+
+          <div class="form-group">
+            <label for="old_password">Stara lozinka</label>
+            <input
+              id="old_password"
+              type="password"
+              [(ngModel)]="passwordData.old_password"
+              name="old_password"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="new_password">Nova lozinka</label>
+            <input
+              id="new_password"
+              type="password"
+              [(ngModel)]="passwordData.new_password"
+              name="new_password"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="confirm_password">Potvrdi novu lozinku</label>
+            <input
+              id="confirm_password"
+              type="password"
+              [(ngModel)]="passwordData.confirm_password"
+              name="confirm_password"
+            />
+          </div>
+
+          <div class="button-group">
+            <button class="save-btn" (click)="changePassword()">Sačuvaj lozinku</button>
+            <button class="cancel-btn" (click)="cancelPasswordEdit()">Otkaži</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="vehicle-section">
+        <div class="section-header">
+          <h3>Moja vozila</h3>
+          <button class="edit-btn" (click)="toggleVehicleSection()">
+            {{ vehicleSectionVisible ? 'Sakrij vozila' : 'Upravljaj vozilima' }}
+          </button>
+        </div>
+
+        <div *ngIf="vehicleSectionVisible" class="vehicle-content">
+          <div *ngIf="vehicleErrorMessage" class="error-message">
+            {{ vehicleErrorMessage }}
+          </div>
+
+          <div *ngIf="vehicleSuccessMessage" class="success-message">
+            {{ vehicleSuccessMessage }}
+          </div>
+
+          <div class="vehicle-list" *ngIf="vehicles.length > 0; else noVehicles">
+            <div *ngFor="let vehicle of vehicles" class="vehicle-card">
+              <div class="vehicle-info">
+                <div class="vehicle-plate">{{ vehicle.license_plate }}</div>
+                <div class="vehicle-name">
+                  {{ vehicle.name || 'Bez naziva vozila' }}
+                </div>
+              </div>
+
+              <div class="vehicle-actions">
+                <button class="edit-btn small-btn" (click)="startEditVehicle(vehicle)">
+                  Izmeni
+                </button>
+                <button class="cancel-btn small-btn" (click)="deleteVehicle(vehicle.id)">
+                  Obriši
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #noVehicles>
+            <p class="empty-text">Nema unetih vozila.</p>
+          </ng-template>
+
+          <div class="vehicle-add-bar">
+            <button class="save-btn" (click)="openVehicleForm()">Dodaj vozilo</button>
+          </div>
+
+          <div *ngIf="vehicleFormVisible" class="vehicle-form-card">
+            <h4>{{ vehicleEditId ? 'Izmena vozila' : 'Dodavanje vozila' }}</h4>
+
+            <div class="form-group">
+              <label for="license_plate">Tablica</label>
+              <input
+                id="license_plate"
+                type="text"
+                [(ngModel)]="vehicleFormData.license_plate"
+                name="license_plate"
+                placeholder="Npr. NS123AB"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="vehicle_name">Naziv vozila</label>
+              <input
+                id="vehicle_name"
+                type="text"
+                [(ngModel)]="vehicleFormData.name"
+                name="vehicle_name"
+                placeholder="Npr. Moj auto"
+              />
+            </div>
+
+            <div class="button-group">
+              <button class="save-btn" (click)="saveVehicle()">
+                {{ vehicleEditId ? 'Sačuvaj izmene' : 'Dodaj vozilo' }}
+              </button>
+              <button class="cancel-btn" (click)="cancelVehicleForm()">Otkaži</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

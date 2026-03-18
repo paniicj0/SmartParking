@@ -1,0 +1,11 @@
+<div class="activate-container">
+    <h2>Aktivacija naloga</h2>
+  
+    <p [class.success]="isSuccess" [class.error]="!isSuccess">
+      {{ message }}
+    </p>
+  
+    @if (isSuccess) {
+      <a routerLink="/login">Idi na login</a>
+    }
+  </div>

@@ -7,24 +7,23 @@ use axum::{
     Json,
 };
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
-use sqlx::PgPool;
 
-use crate::models::{
-    Claims, LoginRequest, LoginResponse, RegisterUserRequest, RegisterUserResponse,
-    User, UserProfileResponse,
+use crate::{
+    models::{Claims, LoginRequest, LoginResponse, RegisterUserRequest, RegisterUserResponse, User},
+    state::AppState,
 };
 
-#[derive(Clone)]
-pub struct AppState {
-    pub db: PgPool,
-    pub jwt_secret: String,
-}
+use lettre::message::header::ContentType;
+use lettre::transport::smtp::authentication::Credentials;
+use lettre::{Message, SmtpTransport, Transport};
+
+use uuid::Uuid;
 
 pub async fn health() -> &'static str {
     "API radi"
 }
 
-fn extract_claims_from_token(
+pub fn extract_claims_from_token(
     headers: &HeaderMap,
     jwt_secret: &str,
 ) -> Result<Claims, (StatusCode, String)> {
@@ -92,24 +91,65 @@ pub async fn register_user(
             )
         })?;
 
-    sqlx::query(
+    let user_id: i32 = sqlx::query_scalar(
         r#"
         INSERT INTO users (email, password_hash, first_name, last_name, phone_number, is_active)
         VALUES ($1, $2, $3, $4, $5, $6)
-        "#
+        RETURNING id
+        "#,
     )
     .bind(&payload.email)
     .bind(&hashed_password)
     .bind(&payload.first_name)
     .bind(&payload.last_name)
     .bind(&payload.phone_number)
-    .bind(true)
-    .execute(&state.db)
+    .bind(false)
+    .fetch_one(&state.db)
     .await
     .map_err(|e| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             format!("Greska pri cuvanju korisnika: {}", e),
+        )
+    })?;
+
+    let activation_token = Uuid::new_v4().to_string();
+    let expires_at = (Utc::now() + Duration::hours(24)).naive_utc();
+
+    sqlx::query(
+        r#"
+        INSERT INTO user_activation_tokens (user_id, token, expires_at)
+        VALUES ($1, $2, $3)
+        "#,
+    )
+    .bind(user_id)
+    .bind(&activation_token)
+    .bind(expires_at)
+    .execute(&state.db)
+    .await
+    .map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Nije lepo sacuvan aktivacioni token: {}", e),
+        )
+    })?;
+
+    let activation_link = format!(
+        "http://localhost:4200/activate?token={}",
+        activation_token
+    );
+
+    send_activation_email(
+        &payload.email,
+        &activation_link,
+        &state.mail_username,
+        &state.mail_password,
+        &state.mail_from,
+    )
+    .map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Greska pri slanju aktivacionog email-a: {}", e),
         )
     })?;
 
@@ -130,7 +170,7 @@ pub async fn login_user(
         SELECT id, email, password_hash, first_name, last_name, phone_number, is_active
         FROM users
         WHERE email = $1
-        "#
+        "#,
     )
     .bind(&payload.email)
     .fetch_optional(&state.db)
@@ -203,45 +243,99 @@ pub async fn login_user(
     ))
 }
 
-pub async fn get_me(
+pub async fn activate_user(
     State(state): State<AppState>,
-    headers: HeaderMap,
-) -> Result<Json<UserProfileResponse>, (StatusCode, String)> {
-    let claims = extract_claims_from_token(&headers, &state.jwt_secret)?;
+    axum::extract::Query(params): axum::extract::Query<std::collections::HashMap<String, String>>,
+) -> Result<(StatusCode, String), (StatusCode, String)> {
+    let token = params
+        .get("token")
+        .ok_or((StatusCode::BAD_REQUEST, "Token nedostaje".to_string()))?;
 
-    let user = sqlx::query_as::<_, User>(
+    let record = sqlx::query!(
         r#"
-        SELECT id, email, password_hash, first_name, last_name, phone_number, is_active
-        FROM users
-        WHERE id = $1
-        "#
+        SELECT user_id, expires_at
+        FROM user_activation_tokens
+        WHERE token = $1
+        "#,
+        token
     )
-    .bind(claims.sub)
     .fetch_optional(&state.db)
     .await
-    .map_err(|e| {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Greska pri citanju korisnika: {}", e),
-        )
-    })?;
+    .map_err(|e| (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        format!("DB greska: {}", e)
+    ))?;
 
-    let user = match user {
-        Some(user) => user,
-        None => {
-            return Err((
-                StatusCode::NOT_FOUND,
-                "Korisnik nije pronadjen.".to_string(),
-            ))
-        }
+    let record = match record {
+        Some(r) => r,
+        None => return Err((StatusCode::BAD_REQUEST, "Nevalidan token".to_string())),
     };
 
-    Ok(Json(UserProfileResponse {
-        id: user.id,
-        email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        phone_number: user.phone_number,
-        is_active: user.is_active,
-    }))
+    if record.expires_at < Utc::now().naive_utc() {
+        return Err((StatusCode::BAD_REQUEST, "Token je istekao".to_string()));
+    }
+
+    sqlx::query("UPDATE users SET is_active = true WHERE id = $1")
+        .bind(record.user_id)
+        .execute(&state.db)
+        .await
+        .map_err(|e| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Greska pri aktivaciji korisnika: {}", e),
+            )
+        })?;
+
+    sqlx::query("DELETE FROM user_activation_tokens WHERE token = $1")
+        .bind(token)
+        .execute(&state.db)
+        .await
+        .map_err(|e| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Greska pri brisanju aktivacionog tokena: {}", e),
+            )
+        })?;
+
+    Ok((StatusCode::OK, "Nalog aktiviran!".to_string()))
+}
+
+fn send_activation_email(
+    to_email: &str,
+    activation_link: &str,
+    mail_username: &str,
+    mail_password: &str,
+    mail_from: &str,
+) -> Result<(), String> {
+    let email = Message::builder()
+        .from(mail_from.parse().map_err(|e| format!("Nevalidan FROM email: {}", e))?)
+        .to(to_email.parse().map_err(|e| format!("Nevalidan TO email: {}", e))?)
+        .subject("Aktivacija naloga - Smart Parking")
+        .header(ContentType::TEXT_PLAIN)
+        .body(format!(
+            "Zdravo,\n\n\
+            Hvala na registraciji na Smart Parking sistem.\n\
+            Da biste aktivirali svoj nalog, kliknite na sledeci link:\n\n\
+            {}\n\n\
+            Ovaj link vazi 24 sata.\n\n\
+            Ako niste vi napravili nalog, zanemarite ovu poruku.\n",
+            activation_link
+        ))
+        .map_err(|e| format!("Greska pri kreiranju email poruke: {}", e))?;
+
+    let creds = Credentials::new(
+        mail_username.to_string(),
+        mail_password.to_string(),
+    );
+
+    let mailer = SmtpTransport::relay("smtp.gmail.com")
+        .map_err(|e| format!("Greska pri kreiranju SMTP relay-ja: {}", e))?
+        .credentials(creds)
+        .build();
+
+    mailer
+        .send(&email)
+        .map_err(|e| format!("Greska pri slanju email-a: {}", e))?;
+
+    Ok(())
 }

@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use sqlx::FromRow;
+use sqlx::{FromRow, PgPool};
 
 #[derive(Deserialize)]
 pub struct RegisterUserRequest {
@@ -45,12 +45,21 @@ pub struct User {
     pub is_active: bool,
 }
 
-#[derive(Serialize)]
-pub struct UserProfileResponse {
+use chrono::NaiveDateTime;
+
+#[derive(sqlx::FromRow)]
+pub struct UserActivationToken {
     pub id: i32,
-    pub email: String,
-    pub first_name: String,
-    pub last_name: String,
-    pub phone_number: String,
-    pub is_active: bool,
+    pub user_id: i32,
+    pub token: String,
+    pub expires_at: NaiveDateTime,
+    pub created_at: NaiveDateTime,
+}
+
+#[derive(Debug, Serialize, Deserialize, FromRow)]
+pub struct Vehicle {
+    pub id: i32,
+    pub user_id: i32,
+    pub license_plate: String,
+    pub name: Option<String>,
 }

@@ -1,4 +1,4 @@
-use chrono::NaiveDateTime;
+use chrono::{NaiveDateTime, Duration};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -145,6 +145,86 @@ pub async fn cancel_reservation(
     )
     .bind(reservation_id)
     .fetch_one(pool)
+    .await?;
+
+    Ok(reservation)
+}
+
+pub async fn expire_old(
+    pool: &PgPool,
+    now: NaiveDateTime,
+) -> Result<u64, sqlx::Error> {
+    let result = sqlx::query(
+        r#"
+        UPDATE reservations
+        SET status = 'Expired',
+            updated_at = NOW()
+        WHERE status = 'Confirmed'
+          AND start_time + INTERVAL '20 minutes' < $1
+        "#,
+    )
+    .bind(now)
+    .execute(pool)
+    .await?;
+
+    Ok(result.rows_affected())
+}
+
+pub async fn mark_used(
+    pool: &PgPool,
+    reservation_id: Uuid,
+) -> Result<u64, sqlx::Error> {
+    let result = sqlx::query(
+        r#"
+        UPDATE reservations
+        SET status = 'Used',
+            updated_at = NOW()
+        WHERE id = $1
+          AND status = 'Confirmed'
+        "#,
+    )
+    .bind(reservation_id)
+    .execute(pool)
+    .await?;
+
+    Ok(result.rows_affected())
+}
+
+pub async fn find_valid_for_entry(
+    pool: &PgPool,
+    user_id: i32,
+    vehicle_id: i32,
+    time: NaiveDateTime,
+) -> Result<Option<Reservation>, sqlx::Error> {
+    let allowed_from = time - Duration::minutes(20);
+    let allowed_to = time + Duration::minutes(20);
+
+    let reservation = sqlx::query_as::<_, Reservation>(
+        r#"
+        SELECT
+            id,
+            user_id,
+            vehicle_id,
+            parking_spot_id,
+            start_time,
+            end_time,
+            status,
+            created_at,
+            updated_at
+        FROM reservations
+        WHERE user_id = $1
+          AND vehicle_id = $2
+          AND status = 'Confirmed'
+          AND start_time BETWEEN $3 AND $4
+        ORDER BY start_time ASC
+        LIMIT 1
+        "#,
+    )
+    .bind(user_id)
+    .bind(vehicle_id)
+    .bind(allowed_from)
+    .bind(allowed_to)
+    .fetch_optional(pool)
     .await?;
 
     Ok(reservation)

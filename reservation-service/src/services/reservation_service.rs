@@ -3,7 +3,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::{
-    dto::reservation_dto::{CreateReservationRequest, ReservationResponse, MyReservationResponse},
+    dto::reservation_dto::{CreateReservationRequest, ReservationResponse, MyReservationResponse, ValidForEntryResponse},
     repositories::reservation_repository,
 };
 
@@ -132,4 +132,40 @@ pub async fn cancel_reservation(
         .map_err(|_| "Greška pri otkazivanju rezervacije.".to_string())?;
 
     Ok("Rezervacija je uspešno otkazana.".to_string())
+}
+
+
+
+pub async fn get_valid_for_entry(
+    pool: &PgPool,
+    user_id: i32,
+    vehicle_id: i32,
+    time: NaiveDateTime,
+) -> Result<Option<ValidForEntryResponse>, sqlx::Error> {
+    let reservation = reservation_repository::find_valid_for_entry(pool, user_id, vehicle_id, time).await?;
+
+    Ok(reservation.map(|r| ValidForEntryResponse {
+        id: r.id,
+        user_id: r.user_id,
+        vehicle_id: r.vehicle_id,
+        parking_spot_id: r.parking_spot_id,
+        start_time: r.start_time.format("%Y-%m-%d %H:%M:%S").to_string(),
+        end_time: r.end_time.format("%Y-%m-%d %H:%M:%S").to_string(),
+        status: r.status,
+    }))
+}
+
+pub async fn mark_used(
+    pool: &PgPool,
+    reservation_id: Uuid,
+) -> Result<bool, sqlx::Error> {
+    let affected = reservation_repository::mark_used(pool, reservation_id).await?;
+    Ok(affected > 0)
+}
+
+pub async fn expire_old(
+    pool: &PgPool,
+    now: NaiveDateTime,
+) -> Result<u64, sqlx::Error> {
+    reservation_repository::expire_old(pool, now).await
 }

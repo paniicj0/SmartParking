@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
@@ -9,16 +9,20 @@ import { CreateReservationRequest, MyReservation } from '../../models/reservatio
 import { VehicleService } from '../../services/vehicle.service';
 import { ReservationService } from '../../services/reservation.service';
 import { HeaderComponent } from '../../shared/header/header.component';
+import { ActiveParkingSessionResponse, ExitResponse, ParkingHistoryItemResponse, ParkingSessionService } from '../../services/parking-session.service';
+import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-user-home',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule,HeaderComponent],
+  imports: [CommonModule, ReactiveFormsModule,HeaderComponent, FormsModule],
   templateUrl: './user-home.component.html',
   styleUrls: ['./user-home.component.css']
 })
 export class UserHomeComponent implements OnInit {
   reservationForm!: FormGroup;
+  selectedParkingVehicleId: number | null = null;
 
   vehicles: Vehicle[] = [];
   spots: ParkingSpotStatus[] = [];
@@ -34,6 +38,23 @@ export class UserHomeComponent implements OnInit {
   successMessage = '';
   errorMessage = '';
 
+  private parkingSessionService = inject(ParkingSessionService);
+
+  entryGateId: string = '11111111-1111-1111-1111-111111111111';
+  exitGateId: string = '22222222-2222-2222-2222-222222222222';
+  selectedVehicleId: number | null = null;
+
+  activeSession: ActiveParkingSessionResponse | null = null;
+  historyItems: ParkingHistoryItemResponse[] = [];
+  historyStatusFilter: string = '';
+
+  entryMessage: string = '';
+  activeMessage: string = '';
+  exitMessage: string = '';
+  historyMessage: string = '';
+
+  lastExitResult: ExitResponse | null = null;
+
   constructor(
     private fb: FormBuilder,
     private vehicleService: VehicleService,
@@ -44,6 +65,8 @@ export class UserHomeComponent implements OnInit {
     this.initForm();
     this.loadVehicles();
     this.loadMyReservations();
+    this.loadActiveSession();
+    this.loadParkingHistory();
   }
 
   initForm(): void {
@@ -190,5 +213,78 @@ export class UserHomeComponent implements OnInit {
   clearMessages(): void {
     this.successMessage = '';
     this.errorMessage = '';
+  }
+
+
+  enterParking(): void {
+    this.entryMessage = '';
+
+    if (!this.selectedParkingVehicleId) {
+      this.entryMessage = 'Izaberi vozilo.';
+      return;
+    }
+    
+    this.parkingSessionService.enterParking({
+      gate_id: this.entryGateId,
+      vehicle_id: this.selectedParkingVehicleId
+    }).subscribe({
+      next: (response) => {
+        this.entryMessage = response.message;
+        this.lastExitResult = null;
+        this.loadActiveSession();
+        this.loadParkingHistory();
+      },
+      error: (error: HttpErrorResponse) => {
+        this.entryMessage = error.error?.message || 'Greška prilikom evidentiranja ulaska.';
+      }
+    });
+  }
+
+  loadActiveSession(): void {
+    this.activeMessage = '';
+
+    this.parkingSessionService.getActiveSession().subscribe({
+      next: (response) => {
+        this.activeSession = response;
+      },
+      error: (error: HttpErrorResponse) => {
+        this.activeSession = null;
+        this.activeMessage = error.error?.message || 'Korisnik nema aktivno parkiranje.';
+      }
+    });
+  }
+
+  exitParking(): void {
+    this.exitMessage = '';
+
+    this.parkingSessionService.exitParking({
+      gate_id: this.exitGateId
+    }).subscribe({
+      next: (response) => {
+        this.lastExitResult = response;
+        this.exitMessage = response.message;
+        this.activeSession = null;
+        this.loadParkingHistory();
+      },
+      error: (error: HttpErrorResponse) => {
+        this.exitMessage = error.error?.message || 'Greška prilikom evidentiranja izlaska.';
+      }
+    });
+  }
+
+  loadParkingHistory(): void {
+    this.historyMessage = '';
+
+    const status = this.historyStatusFilter.trim() || undefined;
+
+    this.parkingSessionService.getHistory(status).subscribe({
+      next: (response) => {
+        this.historyItems = response.items;
+      },
+      error: (error: HttpErrorResponse) => {
+        this.historyItems = [];
+        this.historyMessage = error.error?.message || 'Greška prilikom učitavanja istorije.';
+      }
+    });
   }
 }

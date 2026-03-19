@@ -111,5 +111,127 @@
           </div>
         </div>
       </div>
+      <div class="parking-session-section">
+        <h2>Evidencija parkiranja</h2>
+      
+        <div class="card-box">
+          <h3>Ulazak na parking</h3>
+      
+          <div class="form-row">
+            <label for="parkingVehicle">Vozilo</label>
+            <select id="parkingVehicle" [(ngModel)]="selectedParkingVehicleId">
+              <option [ngValue]="null">Izaberi vozilo</option>
+              <option *ngFor="let vehicle of vehicles" [ngValue]="vehicle.id">
+                {{ vehicle.license_plate }}
+              </option>
+            </select>
+          </div>
+      
+          <div class="form-row">
+            <label for="entryGate">Ulazna rampa</label>
+            <input
+              id="entryGate"
+              type="text"
+              [(ngModel)]="entryGateId"
+            />
+          </div>
+      
+          <button (click)="enterParking()">Evidentiraj ulazak</button>
+      
+          <p *ngIf="entryMessage">{{ entryMessage }}</p>
+        </div>
+      
+        <div class="card-box">
+          <h3>Aktivno parkiranje</h3>
+      
+          <button (click)="loadActiveSession()">Osveži aktivnu sesiju</button>
+      
+          <p *ngIf="activeMessage">{{ activeMessage }}</p>
+      
+          <div *ngIf="activeSession">
+            <p><strong>Session ID:</strong> {{ activeSession.session_id }}</p>
+            <p><strong>Reservation ID:</strong> {{ activeSession.reservation_id }}</p>
+            <p><strong>Vehicle ID:</strong> {{ activeSession.vehicle_id }}</p>
+            <p><strong>Parking spot:</strong> {{ activeSession.parking_spot_id }}</p>
+            <p><strong>Entry time:</strong> {{ activeSession.entry_time }}</p>
+            <p><strong>Planned start:</strong> {{ activeSession.planned_start_time }}</p>
+            <p><strong>Planned end:</strong> {{ activeSession.planned_end_time }}</p>
+            <p><strong>Status:</strong> {{ activeSession.status }}</p>
+          </div>
+        </div>
+      
+        <div class="card-box">
+          <h3>Izlazak sa parkinga</h3>
+      
+          <div class="form-row">
+            <label for="exitGate">Izlazna rampa</label>
+            <input
+              id="exitGate"
+              type="text"
+              [(ngModel)]="exitGateId"
+            />
+          </div>
+      
+          <button (click)="exitParking()">Evidentiraj izlazak</button>
+      
+          <p *ngIf="exitMessage">{{ exitMessage }}</p>
+      
+          <div *ngIf="lastExitResult">
+            <p><strong>Entry time:</strong> {{ lastExitResult.entry_time }}</p>
+            <p><strong>Exit time:</strong> {{ lastExitResult.exit_time }}</p>
+            <p><strong>Trajanje:</strong> {{ lastExitResult.duration_minutes }} min</p>
+            <p><strong>Naplativi sati:</strong> {{ lastExitResult.billable_hours }}</p>
+            <p><strong>Ukupno:</strong> {{ lastExitResult.total_amount }}</p>
+          </div>
+        </div>
+      
+        <div class="card-box">
+          <h3>Istorija parkiranja</h3>
+      
+          <div class="form-row">
+            <label for="historyStatus">Filter status</label>
+            <select id="historyStatus" [(ngModel)]="historyStatusFilter">
+              <option value="">Svi</option>
+              <option value="Active">Active</option>
+              <option value="Completed">Completed</option>
+            </select>
+      
+            <button (click)="loadParkingHistory()">Filtriraj</button>
+          </div>
+      
+          <p *ngIf="historyMessage">{{ historyMessage }}</p>
+      
+          <table *ngIf="historyItems.length > 0">
+            <thead>
+              <tr>
+                <th>Session</th>
+                <th>Vehicle</th>
+                <th>Spot</th>
+                <th>Entry</th>
+                <th>Exit</th>
+                <th>Planned Start</th>
+                <th>Planned End</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of historyItems">
+                <td>{{ item.session_id }}</td>
+                <td>{{ item.vehicle_id }}</td>
+                <td>{{ item.parking_spot_id }}</td>
+                <td>{{ item.entry_time }}</td>
+                <td>{{ item.exit_time || '-' }}</td>
+                <td>{{ item.planned_start_time }}</td>
+                <td>{{ item.planned_end_time }}</td>
+                <td>{{ item.status }}</td>
+              </tr>
+            </tbody>
+          </table>
+      
+          <p *ngIf="historyItems.length === 0">Nema stavki u istoriji.</p>
+        </div>
+      </div>
+
+
     </div>
   </div>

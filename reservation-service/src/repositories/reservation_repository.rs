@@ -1,3 +1,5 @@
+use std::fs::exists;
+
 use chrono::{NaiveDateTime, Duration};
 use sqlx::PgPool;
 use uuid::Uuid;
@@ -102,6 +104,7 @@ pub async fn get_my_reservations(
         FROM reservations r
         JOIN parking_spots ps ON r.parking_spot_id = ps.id
         WHERE r.user_id = $1
+        AND status = 'Confirmed'
         ORDER BY r.start_time DESC
         "#
     )
@@ -228,4 +231,31 @@ pub async fn find_valid_for_entry(
     .await?;
 
     Ok(reservation)
+}
+
+pub async fn has_overlapping_reservation_for_vehicle(
+    pool: &PgPool,
+    vehicle_id: i32,
+    start_time: NaiveDateTime,
+    end_time: NaiveDateTime,
+) -> Result<bool, sqlx::Error> {
+    let exists = sqlx::query_scalar(
+        r#"
+        SELECT EXISTS (
+            SELECT 1
+            FROM reservations
+            WHERE vehicle_id = $1
+              AND status IN ('Pending', 'Confirmed')
+              AND $2 < end_time
+              AND $3 > start_time
+        )
+        "#,
+    )
+    .bind(vehicle_id)
+    .bind(start_time)
+    .bind(end_time)
+    .fetch_one(pool)
+    .await?;
+
+    Ok(exists)
 }

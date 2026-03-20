@@ -55,18 +55,22 @@ export class UserHomeComponent implements OnInit {
 
   lastExitResult: ExitResponse | null = null;
 
-  constructor(
-    private fb: FormBuilder,
-    private vehicleService: VehicleService,
-    private reservationService: ReservationService
-  ) {}
+  minDateTime: string = '';
 
+constructor(
+  private fb: FormBuilder,
+  private vehicleService: VehicleService,
+  private reservationService: ReservationService
+  ) {}
+  
   ngOnInit(): void {
+    const now = new Date();
     this.initForm();
     this.loadVehicles();
     this.loadMyReservations();
     this.loadActiveSession();
     this.loadParkingHistory();
+    this.minDateTime = now.toISOString().slice(0, 16);
   }
 
   initForm(): void {

@@ -237,6 +237,52 @@
           </div>
         </div>
       </div>
+
+    </div>
+    <div class="card-box">
+      <h3>Istorija parkiranja</h3>
+  
+      <div class="form-row">
+        <label for="historyStatus">Filter status</label>
+        <select id="historyStatus" [(ngModel)]="historyStatusFilter">
+          <option value="">Svi</option>
+          <option value="Active">Active</option>
+          <option value="Completed">Completed</option>
+        </select>
+  
+        <button (click)="loadParkingHistory()">Filtriraj</button>
+      </div>
+  
+      <p *ngIf="historyMessage">{{ historyMessage }}</p>
+  
+      <table *ngIf="historyItems.length > 0">
+        <thead>
+          <tr>
+            <th>Session</th>
+            <th>Vehicle</th>
+            <th>Spot</th>
+            <th>Entry</th>
+            <th>Exit</th>
+            <th>Planned Start</th>
+            <th>Planned End</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of historyItems">
+            <td>{{ item.session_id }}</td>
+            <td>{{ item.vehicle_id }}</td>
+            <td>{{ item.parking_spot_id }}</td>
+            <td>{{ item.entry_time }}</td>
+            <td>{{ item.exit_time || '-' }}</td>
+            <td>{{ item.planned_start_time }}</td>
+            <td>{{ item.planned_end_time }}</td>
+            <td>{{ item.status }}</td>
+          </tr>
+        </tbody>
+      </table>
+  
+      <p *ngIf="historyItems.length === 0">Nema stavki u istoriji.</p>
     </div>
 
   </div>

@@ -13,6 +13,7 @@
     <div class="content-grid">
       <div class="card">
         <h2>Nova rezervacija</h2>
+        <h5>*cena po zapocetom satu 100 din.</h5>
   
         <form [formGroup]="reservationForm" class="reservation-form">
           <label for="vehicle">Vozilo</label>
@@ -24,10 +25,20 @@
           </select>
   
           <label for="startTime">Početak</label>
-          <input id="startTime" type="datetime-local" formControlName="start_time" />
-  
+          <input
+            id="startTime"
+            type="datetime-local"
+            formControlName="start_time"
+            [min]="minDateTime"
+          />
+
           <label for="endTime">Kraj</label>
-          <input id="endTime" type="datetime-local" formControlName="end_time" />
+          <input
+            id="endTime"
+            type="datetime-local"
+            formControlName="end_time"
+            [min]="minDateTime"
+          />
   
           <button type="button" (click)="checkAvailability()">
             Proveri dostupnost
@@ -185,7 +196,7 @@
           </div>
         </div>
       
-        <div class="card-box">
+       <!-- <div class="card-box">
           <h3>Istorija parkiranja</h3>
       
           <div class="form-row">
@@ -229,7 +240,7 @@
           </table>
       
           <p *ngIf="historyItems.length === 0">Nema stavki u istoriji.</p>
-        </div>
+        </div>-->
       </div>
 
 

@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use crate::{
     dto::reservation_dto::{CreateReservationRequest, ReservationResponse, MyReservationResponse, ValidForEntryResponse},
-    repositories::reservation_repository,
+    repositories::reservation_repository::{self, has_overlapping_reservation_for_vehicle},
 };
 
 pub async fn create_reservation(
@@ -25,6 +25,19 @@ pub async fn create_reservation(
     let now = Utc::now().naive_utc();
     if start_time < now {
         return Err("Rezervacija ne može biti u prošlosti.".to_string());
+    }
+    
+    let has_overlap: bool = has_overlapping_reservation_for_vehicle(
+        pool,
+        request.vehicle_id,
+        start_time,
+        end_time,
+    )
+    .await
+    .map_err(|_| "Greška pri proveri postojećih rezervacija.".to_string())?;
+    
+    if has_overlap {
+        return Err("Za ovo vozilo već postoji rezervacija u izabranom periodu.".to_string());
     }
 
     let spot = reservation_repository::get_parking_spot_by_id(pool, request.parking_spot_id)
@@ -92,7 +105,7 @@ pub async fn get_my_reservations(
             zone: reservation.zone,
             start_time: reservation.start_time.format("%Y-%m-%dT%H:%M:%S").to_string(),
             end_time: reservation.end_time.format("%Y-%m-%dT%H:%M:%S").to_string(),
-            status: reservation.status,
+            status: reservation.status
         })
         .collect();
 

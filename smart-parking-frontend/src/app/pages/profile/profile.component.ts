@@ -1,15 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { UserProfile } from '../../models/user-profile';
 import { Vehicle } from '../../models/vehicle';
 import { HeaderComponent } from '../../shared/header/header.component';
+import { ParkingHistoryItemResponse, ParkingSessionService } from '../../services/parking-session.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, HeaderComponent],
+  imports: [CommonModule, FormsModule, HeaderComponent, ReactiveFormsModule],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })
@@ -48,10 +50,17 @@ export class ProfileComponent implements OnInit {
 
   vehicleErrorMessage = '';
   vehicleSuccessMessage = '';
+
+  historyItems: ParkingHistoryItemResponse[] = [];
+  historyStatusFilter: string = '';
+  private parkingSessionService = inject(ParkingSessionService);
+  
+  historyMessage: string = '';
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
     this.loadProfile();
+    this.loadParkingHistory();
   }
 
   loadProfile(): void {
@@ -303,6 +312,22 @@ export class ProfileComponent implements OnInit {
       error: (err) => {
         console.error(err);
         this.vehicleErrorMessage = err?.error || 'Greška pri brisanju vozila.';
+      }
+    });
+  }
+
+  loadParkingHistory(): void {
+    this.historyMessage = '';
+
+    const status = this.historyStatusFilter.trim() || undefined;
+
+    this.parkingSessionService.getHistory(status).subscribe({
+      next: (response) => {
+        this.historyItems = response.items;
+      },
+      error: (error: HttpErrorResponse) => {
+        this.historyItems = [];
+        this.historyMessage = error.error?.message || 'Greška prilikom učitavanja istorije.';
       }
     });
   }

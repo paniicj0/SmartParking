@@ -159,3 +159,53 @@
     flex-direction: column;
     gap: 6px;
   }
+
+  .parking-session-section {
+    margin-top: 30px;
+  }
+  
+  .card-box {
+    border: 1px solid #ddd;
+    padding: 16px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    background: #fff;
+  }
+  
+  .form-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+  }
+  
+  input,
+  select {
+    padding: 8px;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+  }
+  
+  button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+  }
+  
+  table th,
+  table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  table th {
+    background-color: #f3f3f3;
+  }

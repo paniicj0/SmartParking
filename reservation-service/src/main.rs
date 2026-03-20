@@ -20,6 +20,28 @@ use crate::app_state::AppState;
 use crate::config::Config;
 use crate::routes::create_router;
 
+use chrono::Local;
+use tokio::time::{sleep, Duration};
+
+fn start_expire_old_job(pool: PgPool) {
+    tokio::spawn(async move {
+        loop {
+            let now = Local::now().naive_local();
+
+            match crate::services::reservation_service::expire_old(&pool, now).await {
+                Ok(count) => {
+                    println!("Expired reservations updated: {}", count);
+                }
+                Err(err) => {
+                    eprintln!("Error while expiring reservations: {}", err);
+                }
+            }
+
+            sleep(Duration::from_secs(60)).await;
+        }
+    });
+}
+
 #[tokio::main]
 async fn main() {
     dotenv().ok();
@@ -33,6 +55,8 @@ async fn main() {
     let db_pool = PgPool::connect(&config.database_url)
         .await
         .expect("failed to connect to database");
+
+    start_expire_old_job(db_pool.clone());
 
     let app_state = AppState { db: db_pool };
 

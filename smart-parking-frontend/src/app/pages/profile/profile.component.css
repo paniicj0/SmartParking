@@ -261,3 +261,17 @@
     align-items: flex-start;
   }
 }
+
+.card-box {
+  border: 1px solid #ddd;
+  padding: 19px;
+  margin-bottom: 40px;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 22px;
+}

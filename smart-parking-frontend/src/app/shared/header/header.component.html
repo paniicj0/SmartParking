@@ -1,15 +1,19 @@
 <header class="app-header">
-    <div class="header-left">
-      <span class="app-title">Smart Parking</span>
-    </div>
-  
-    <div class="header-right">
-      <button type="button" class="header-btn profile-btn" (click)="goToProfile()">
-        Moj profil
-      </button>
-  
-      <button type="button" class="header-btn logout-btn" (click)="logout()">
-        Logout
-      </button>
-    </div>
-  </header>
+  <div class="header-left">
+    <span class="app-title">Smart Parking</span>
+  </div>
+
+  <div class="header-right">
+    <button type="button" class="header-btn" (click)="goToInvoices()">
+      Moji računi
+    </button>
+
+    <button type="button" class="header-btn profile-btn" (click)="goToProfile()">
+      Moj profil
+    </button>
+
+    <button type="button" class="header-btn logout-btn" (click)="logout()">
+      Logout
+    </button>
+  </div>
+</header>

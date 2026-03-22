@@ -1,0 +1,244 @@
+.invoices-page {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 24px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  }
+  
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  
+  .page-header h1 {
+    margin: 0;
+    font-size: 28px;
+    color: #1f2937;
+  }
+  
+  .page-description {
+    margin-bottom: 24px;
+    color: #6b7280;
+  }
+  
+  .back-btn {
+    border: none;
+    background-color: #374151;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  
+  .back-btn:hover {
+    background-color: #1f2937;
+  }
+  
+  .info-box,
+  .empty-state,
+  .message {
+    padding: 14px 16px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    font-weight: 500;
+  }
+  
+  .info-box {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+  }
+  
+  .empty-state {
+    background-color: #f9fafb;
+    color: #4b5563;
+  }
+  
+  .message {
+    color: white;
+  }
+  
+  .error-message {
+    background-color: #dc2626;
+  }
+  
+  .success-message {
+    background-color: #16a34a;
+  }
+  
+  .invoice-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  
+  .invoice-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 18px;
+    background-color: #f9fafb;
+  }
+  
+  .invoice-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .invoice-top h3 {
+    margin: 0 0 6px 0;
+    color: #111827;
+  }
+  
+  .session-id {
+    margin: 0;
+    font-size: 13px;
+    color: #6b7280;
+    word-break: break-all;
+  }
+  
+  .status-badge {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  
+  .status-badge.paid {
+    background-color: #dcfce7;
+    color: #166534;
+  }
+  
+  .status-badge.unpaid {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+  
+  .invoice-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 8px;
+  }
+  
+  .label {
+    font-weight: 600;
+    color: #374151;
+  }
+  
+  .value {
+    color: #111827;
+    text-align: right;
+  }
+  
+  .qr-row {
+    align-items: flex-start;
+  }
+  
+  .qr-value {
+    max-width: 65%;
+    word-break: break-word;
+    text-align: right;
+  }
+  
+  .invoice-actions {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .pay-btn {
+    border: none;
+    background-color: #2563eb;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    min-width: 110px;
+  }
+  
+  .pay-btn:hover:not(:disabled) {
+    background-color: #1d4ed8;
+  }
+  
+  .pay-btn:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+  }
+  
+  @media (max-width: 768px) {
+    .invoices-page {
+      margin: 20px 12px;
+      padding: 18px;
+    }
+  
+    .page-header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  
+    .detail-row {
+      flex-direction: column;
+    }
+  
+    .value,
+    .qr-value {
+      text-align: left;
+      max-width: 100%;
+    }
+  
+    .invoice-top {
+      flex-direction: column;
+    }
+  
+    .invoice-actions {
+      justify-content: stretch;
+    }
+  
+    .pay-btn {
+      width: 100%;
+    }
+  }
+
+  .invoice-actions {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  
+  .download-btn {
+    border: none;
+    background-color: #374151;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    min-width: 130px;
+  }
+  
+  .download-btn:hover:not(:disabled) {
+    background-color: #1f2937;
+  }
+  
+  .download-btn:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+  }

@@ -269,6 +269,7 @@ constructor(
         this.exitMessage = response.message;
         this.activeSession = null;
         this.loadParkingHistory();
+        alert('Račun je generisan i poslat na email!');
       },
       error: (error: HttpErrorResponse) => {
         this.exitMessage = error.error?.message || 'Greška prilikom evidentiranja izlaska.';

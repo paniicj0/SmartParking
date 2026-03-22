@@ -1,0 +1,142 @@
+<div class="admin-spots-container">
+    <div class="top-bar">
+      <h2>Admin panel - Parking mesta</h2>
+      <button type="button" (click)="logout()">Logout</button>
+    </div>
+  
+    <div *ngIf="successMessage()" class="success-message">
+      {{ successMessage() }}
+    </div>
+  
+    <div *ngIf="errorMessage()" class="error-message">
+      {{ errorMessage() }}
+    </div>
+  
+    <section class="occupancy-section" *ngIf="occupancy() as occ">
+      <h3>Pregled zauzetosti</h3>
+  
+      <div class="cards">
+        <div class="card">
+          <h4>Ukupno mesta</h4>
+          <p>{{ occ.total_spots }}</p>
+        </div>
+  
+        <div class="card">
+          <h4>Aktivna mesta</h4>
+          <p>{{ occ.active_spots }}</p>
+        </div>
+  
+        <div class="card">
+          <h4>Neaktivna mesta</h4>
+          <p>{{ occ.inactive_spots }}</p>
+        </div>
+  
+        <div class="card">
+          <h4>Rezervisana mesta</h4>
+          <p>{{ occ.reserved_spots }}</p>
+        </div>
+  
+        <div class="card">
+          <h4>Slobodna mesta</h4>
+          <p>{{ occ.free_spots }}</p>
+        </div>
+  
+        <div class="card">
+          <h4>Zauzetost</h4>
+          <p>{{ occ.occupancy_percentage | number:'1.0-2' }}%</p>
+        </div>
+      </div>
+    </section>
+  
+    <section class="analytics-section">
+        <h3>Dnevna zauzetost</h3>
+        <div class="chart-container">
+          <canvas #occupancyChart></canvas>
+        </div>
+    </section>
+  
+    <section>
+      <h3>{{ isEditMode ? 'Izmena parking mesta' : 'Dodavanje parking mesta' }}</h3>
+  
+      <form (ngSubmit)="onSubmit()" #spotForm="ngForm" class="spot-form">
+        <div>
+          <label for="label">Oznaka mesta</label>
+          <input id="label" type="text" name="label" [(ngModel)]="formData.label" required />
+        </div>
+  
+        <div>
+          <label for="floor">Sprat</label>
+          <input id="floor" type="number" name="floor" [(ngModel)]="formData.floor" />
+        </div>
+  
+        <div>
+          <label for="zone">Zona</label>
+          <input id="zone" type="text" name="zone" [(ngModel)]="formData.zone" required />
+        </div>
+  
+        <div>
+          <label for="spot_type">Tip mesta</label>
+          <select id="spot_type" name="spot_type" [(ngModel)]="formData.spot_type" required>
+            <option value="" disabled>Izaberi tip</option>
+            <option value="STANDARD">STANDARD</option>
+            <option value="DISABLED">DISABLED</option>
+            <option value="ELECTRIC">ELECTRIC</option>
+            <option value="VIP">VIP</option>
+          </select>
+        </div>
+  
+        <div>
+          <label>
+            <input type="checkbox" name="is_active" [(ngModel)]="formData.is_active" />
+            Aktivno
+          </label>
+        </div>
+  
+        <div class="form-actions">
+          <button type="submit">
+            {{ isEditMode ? 'Sačuvaj izmene' : 'Dodaj mesto' }}
+          </button>
+  
+          <button type="button" (click)="resetForm()" *ngIf="isEditMode">
+            Otkaži
+          </button>
+        </div>
+      </form>
+    </section>
+  
+    <hr />
+  
+    <section>
+      <h3>Lista parking mesta</h3>
+  
+      <table class="spots-table" *ngIf="spots().length > 0; else noData">
+        <thead>
+          <tr>
+            <th>Oznaka</th>
+            <th>Sprat</th>
+            <th>Zona</th>
+            <th>Tip</th>
+            <th>Aktivno</th>
+            <th>Akcije</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let spot of spots()">
+            <td>{{ spot.label }}</td>
+            <td>{{ spot.floor ?? '-' }}</td>
+            <td>{{ spot.zone }}</td>
+            <td>{{ spot.spot_type }}</td>
+            <td>{{ spot.is_active ? 'Da' : 'Ne' }}</td>
+            <td>
+              <button type="button" (click)="onEdit(spot)">Izmeni</button>
+              <button type="button" (click)="onDelete(spot.id)">Obriši</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+  
+      <ng-template #noData>
+        <p>Nema parking mesta za prikaz.</p>
+      </ng-template>
+    </section>
+  </div>

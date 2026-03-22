@@ -20,4 +20,8 @@ export class HeaderComponent {
     localStorage.removeItem('token');
     this.router.navigate(['/login']);
   }
+
+  goToInvoices() {
+    this.router.navigate(['/invoices']);
+  }
 }

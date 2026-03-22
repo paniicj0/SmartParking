@@ -1,0 +1,90 @@
+<app-header></app-header>
+<div class="invoices-page">
+    <div class="page-header">
+      <h1>Moji računi</h1>
+      <button class="back-btn" type="button" (click)="goBack()">Nazad</button>
+    </div>
+  
+    <p class="page-description">
+      Ovde možeš pregledati sve generisane račune i simulirati plaćanje.
+    </p>
+  
+    <div *ngIf="loading" class="info-box">
+      Učitavanje računa...
+    </div>
+  
+    <div *ngIf="errorMessage" class="message error-message">
+      {{ errorMessage }}
+    </div>
+  
+    <div *ngIf="successMessage" class="message success-message">
+      {{ successMessage }}
+    </div>
+  
+    <div *ngIf="!loading && invoices.length === 0" class="empty-state">
+      Trenutno nemaš nijedan račun.
+    </div>
+  
+    <div *ngIf="!loading && invoices.length > 0" class="invoice-list">
+      <div class="invoice-card" *ngFor="let invoice of invoices">
+        <div class="invoice-top">
+          <div>
+            <h3>{{ invoice.invoice_number }}</h3>
+            <p class="session-id">Sesija: {{ invoice.session_id }}</p>
+          </div>
+  
+          <span
+            class="status-badge"
+            [ngClass]="isPaid(invoice.status) ? 'paid' : 'unpaid'"
+          >
+            {{ invoice.status }}
+          </span>
+        </div>
+  
+        <div class="invoice-details">
+          <div class="detail-row">
+            <span class="label">Iznos:</span>
+            <span class="value">{{ invoice.amount | number:'1.2-2' }} RSD</span>
+          </div>
+  
+          <div class="detail-row">
+            <span class="label">Datum izdavanja:</span>
+            <span class="value">{{ formatDate(invoice.issued_at) }}</span>
+          </div>
+  
+          <div class="detail-row">
+            <span class="label">Datum plaćanja:</span>
+            <span class="value">{{ formatDate(invoice.paid_at) }}</span>
+          </div>
+  
+          <div class="detail-row qr-row">
+            <span class="label">QR identifikator:</span>
+            <span class="value qr-value">{{ invoice.qr_code_data }}</span>
+          </div>
+        </div>
+  
+        <div class="invoice-actions">
+          <button
+            type="button"
+            class="download-btn"
+            [disabled]="downloadingInvoiceId === invoice.id"
+            (click)="downloadPdf(invoice)"
+          >
+            <span *ngIf="downloadingInvoiceId !== invoice.id">Preuzmi PDF</span>
+            <span *ngIf="downloadingInvoiceId === invoice.id">Preuzimanje...</span>
+          </button>
+        
+          <button
+            type="button"
+            class="pay-btn"
+            [disabled]="isPaid(invoice.status) || payingInvoiceId === invoice.id"
+            (click)="payInvoice(invoice.id)"
+          >
+            <span *ngIf="payingInvoiceId !== invoice.id && !isPaid(invoice.status)">Plati</span>
+            <span *ngIf="payingInvoiceId === invoice.id">Obrada...</span>
+            <span *ngIf="isPaid(invoice.status)">Plaćen</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>

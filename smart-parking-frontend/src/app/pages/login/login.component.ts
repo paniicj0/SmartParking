@@ -34,6 +34,11 @@ export class LoginComponent {
         this.authService.getMe().subscribe({
           next: (userResponse) => {
             console.log('Podaci ulogovanog korisnika:', userResponse);
+            if (this.email === 'admin@gmail.com') {
+              this.router.navigate(['/admin/parking-spots']);
+            } else {
+              this.router.navigate(['/home']);
+            }
           },
           error: (userError) => {
             console.error('Greška pri /users/me:', userError);

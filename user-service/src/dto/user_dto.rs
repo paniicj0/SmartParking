@@ -23,3 +23,15 @@ pub struct ChangePasswordRequest {
     pub old_password: String,
     pub new_password: String,
 }
+
+
+#[derive(Debug, Serialize, Deserialize, FromRow)]
+pub struct UserEmailResponse {
+    pub user_id: i32,
+    pub email: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MessageResponse {
+    pub message: String,
+}

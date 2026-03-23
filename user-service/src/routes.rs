@@ -19,5 +19,6 @@ pub fn create_routes(state: AppState) -> Router {
         .route("/vehicles/me", get(get_my_vehicles))
         .route("/vehicles", post(create_vehicle))
         .route("/vehicles/:id", put(update_vehicle).delete(delete_vehicle))
+        .route("/internal/users/:id/email", get(get_user_email_by_id))
         .with_state(state)
 }

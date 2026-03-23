@@ -1,11 +1,11 @@
 use axum::{
-    extract::State,
+    extract::{State, Path},
     http::{HeaderMap, StatusCode},
     Json,
 };
 
 use crate::{
-    dto::user_dto::{ChangePasswordRequest, UpdateProfileRequest, UserProfileResponse},
+    dto::user_dto::{ChangePasswordRequest, UpdateProfileRequest, UserProfileResponse, UserEmailResponse, MessageResponse},
     models::User,
     state::AppState,
 };
@@ -182,4 +182,40 @@ pub async fn change_password(
     })?;
 
     Ok(StatusCode::OK)
+}
+
+
+pub async fn get_user_email_by_id(
+    State(state): State<AppState>,
+    Path(user_id): Path<i32>,
+) -> Result<(StatusCode, Json<UserEmailResponse>), (StatusCode, Json<MessageResponse>)> {
+    let user = sqlx::query_as::<_, UserEmailResponse>(
+        r#"
+        SELECT id as user_id, email
+        FROM users
+        WHERE id = $1
+        "#
+    )
+    .bind(user_id)
+    .fetch_optional(&state.db)
+    .await
+    .map_err(|_| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(MessageResponse {
+                message: "Greška pri učitavanju korisnika.".to_string(),
+            }),
+        )
+    })?;
+
+    let user = user.ok_or_else(|| {
+        (
+            StatusCode::NOT_FOUND,
+            Json(MessageResponse {
+                message: "Korisnik nije pronađen.".to_string(),
+            }),
+        )
+    })?;
+
+    Ok((StatusCode::OK, Json(user)))
 }

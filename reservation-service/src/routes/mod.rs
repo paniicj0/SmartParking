@@ -1,5 +1,5 @@
 use axum::{
-    routing::{get, post, patch},
+    routing::{get, post, patch, put},
     Router,
 };
 
@@ -10,7 +10,8 @@ use crate::handlers::{
 };
 
 use crate::{
-    handlers::reservation_handler::{expire_old, get_valid_for_entry, mark_used}
+    handlers::reservation_handler::{expire_old, get_valid_for_entry, mark_used},
+    handlers::parking_spot_handler::{create_parking_spot,delete_parking_spot,update_parking_spot, get_all_spots,get_daily_occupancy,get_occupancy_summary}
 };
 
 pub fn create_router(app_state: AppState) -> Router {
@@ -23,5 +24,10 @@ pub fn create_router(app_state: AppState) -> Router {
         .route("/internal/reservations/valid-for-entry", get(get_valid_for_entry))
         .route("/internal/reservations/:id/mark-used", patch(mark_used))
         .route("/internal/reservations/expire-old", post(expire_old))
+        .route("/admin/parking-spots", get(get_all_spots).post(create_parking_spot))
+        .route("/admin/parking-spots/:id", put(update_parking_spot).delete(delete_parking_spot))
+        .route("/admin/parking-spots/occupancy", get(get_occupancy_summary))
+        .route("/admin/parking-spots/analytics/daily-occupancy", get(get_daily_occupancy))
+
         .with_state(app_state)
 }

@@ -16,7 +16,7 @@ pub async fn create_invoice(
         r#"
         INSERT INTO invoices
         (session_id, user_id, reservation_id, invoice_number, qr_code_data, amount, status, issued_at, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, 'Unpaid', NOW(), NOW(), NOW())
+        VALUES ($1, $2, $3, $4, $5, $6, 'Unpaid', CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Belgrade', CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Belgrade', CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Belgrade')
         RETURNING id, session_id, user_id, reservation_id, invoice_number, qr_code_data, amount, status, issued_at, paid_at, created_at, updated_at
         "#,
     )
@@ -59,8 +59,8 @@ pub async fn mark_invoice_paid(
         r#"
         UPDATE invoices
         SET status = 'Paid',
-            paid_at = NOW(),
-            updated_at = NOW()
+            paid_at = CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Belgrade',
+            updated_at = CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Belgrade'
         WHERE id = $1
         RETURNING id, session_id, user_id, reservation_id, invoice_number, qr_code_data, amount, status, issued_at, paid_at, created_at, updated_at
         "#,

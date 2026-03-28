@@ -68,7 +68,7 @@ pub async fn create_parking_session(
             updated_at
         )
         VALUES (
-            $1, $2, $3, $4, $5, $6, NULL, $7, NULL, $8, $9, $10, NOW(), NOW()
+            $1, $2, $3, $4, $5, $6, NULL, $7, NULL, $8, $9, $10, CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Belgrade', CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Belgrade'
         )
         RETURNING
             id,
@@ -115,7 +115,7 @@ pub async fn complete_active_session(
         SET exit_gate_id = $2,
             exit_time = $3,
             status = 'Completed',
-            updated_at = NOW()
+            updated_at =CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Belgrade'
         WHERE id = $1
         RETURNING
             id,

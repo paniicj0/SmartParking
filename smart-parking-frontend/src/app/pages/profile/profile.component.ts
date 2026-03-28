@@ -51,6 +51,11 @@ export class ProfileComponent implements OnInit {
   vehicleErrorMessage = '';
   vehicleSuccessMessage = '';
 
+
+  // paginacija
+  currentPage: number = 1;
+  itemsPerPage: number = 5;
+
   historyItems: ParkingHistoryItemResponse[] = [];
   historyStatusFilter: string = '';
   private parkingSessionService = inject(ParkingSessionService);
@@ -317,6 +322,8 @@ export class ProfileComponent implements OnInit {
   }
 
   loadParkingHistory(): void {
+    this.currentPage = 1;
+
     this.historyMessage = '';
 
     const status = this.historyStatusFilter.trim() || undefined;
@@ -330,5 +337,33 @@ export class ProfileComponent implements OnInit {
         this.historyMessage = error.error?.message || 'Greška prilikom učitavanja istorije.';
       }
     });
+  }
+
+  get paginatedHistoryItems() {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    return this.historyItems.slice(startIndex, endIndex);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.historyItems.length / this.itemsPerPage);
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+  }
+  
+  previousPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
   }
 }

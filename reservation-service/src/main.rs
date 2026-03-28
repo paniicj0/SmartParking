@@ -62,7 +62,7 @@ async fn main() {
 
     let app: Router = create_router(app_state).layer(CorsLayer::permissive());
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], config.port));
+    let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
     println!("Reservation service running on {}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr)

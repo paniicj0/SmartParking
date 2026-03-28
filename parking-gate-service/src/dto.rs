@@ -72,3 +72,14 @@ pub struct ParkingHistoryResponse {
 pub struct ParkingHistoryQuery {
     pub status: Option<String>,
 }
+
+
+#[derive(Serialize)]
+pub struct GenerateInvoiceRequest {
+    pub session_id: Uuid,
+    pub user_id: i32,
+    pub reservation_id: Option<Uuid>,
+    pub start_time: String,
+    pub end_time: String,
+    pub price_per_hour: f64,
+}

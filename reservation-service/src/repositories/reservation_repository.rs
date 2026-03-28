@@ -70,7 +70,9 @@ pub async fn create_reservation(
             created_at,
             updated_at
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+        VALUES ($1, $2, $3, $4, $5, $6, $7,
+            CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Belgrade',
+            CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Belgrade')
         RETURNING id, user_id, vehicle_id, parking_spot_id, start_time, end_time, status, created_at, updated_at
         "#
     )
@@ -141,7 +143,7 @@ pub async fn cancel_reservation(
         r#"
         UPDATE reservations
         SET status = 'Cancelled',
-            updated_at = NOW()
+            updated_at = CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Belgrade'
         WHERE id = $1
         RETURNING id, user_id, vehicle_id, parking_spot_id, start_time, end_time, status, created_at, updated_at
         "#
@@ -161,7 +163,7 @@ pub async fn expire_old(
         r#"
         UPDATE reservations
         SET status = 'Expired',
-            updated_at = NOW()
+            updated_at = CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Belgrade'
         WHERE status = 'Confirmed'
           AND start_time + INTERVAL '20 minutes' < $1
         "#,
@@ -181,7 +183,7 @@ pub async fn mark_used(
         r#"
         UPDATE reservations
         SET status = 'Used',
-            updated_at = NOW()
+            updated_at = CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Belgrade'
         WHERE id = $1
           AND status = 'Confirmed'
         "#,

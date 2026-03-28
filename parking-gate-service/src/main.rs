@@ -59,7 +59,7 @@ async fn main() {
         .with_state(state)
         .layer(CorsLayer::permissive());
 
-    let addr: SocketAddr = SocketAddr::from(([127, 0, 0, 1], port));
+    let addr: SocketAddr = SocketAddr::from(([0, 0, 0, 0], port));
     println!("Parking/Gate Service running on {}", addr);
     
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();

@@ -84,7 +84,7 @@ pub async fn create_spot(
     let spot = sqlx::query_as::<_, ParkingSpot>(
         r#"
         INSERT INTO parking_spots (id, label, floor, zone, spot_type, is_active, created_at)
-        VALUES ($1, $2, $3, $4, $5, $6, NOW())
+        VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Belgrade')
         RETURNING id, label, floor, zone, spot_type, is_active, created_at
         "#
     )
@@ -188,7 +188,7 @@ pub async fn get_daily_occupancy(
         SELECT DATE(start_time)::text as date, COUNT(*) as occupied_count
         FROM reservations
         WHERE status = 'Confirmed'
-            AND start_time >= NOW() - INTERVAL '7 days'
+            AND start_time >= CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Belgrade' - INTERVAL '7 days'
         GROUP BY DATE(start_time)
         ORDER BY DATE(start_time)
         "#

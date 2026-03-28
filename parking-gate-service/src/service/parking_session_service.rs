@@ -3,7 +3,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::{
-    dto::{EntryResponse, ActiveParkingSessionResponse, ExitResponse, ParkingHistoryItemResponse, ParkingHistoryResponse},
+    dto::{EntryResponse, ActiveParkingSessionResponse, ExitResponse, ParkingHistoryItemResponse, ParkingHistoryResponse, GenerateInvoiceRequest},
     repository::{gate_repository, parking_session_repository},
     service::reservation_client
 };
@@ -147,7 +147,8 @@ pub async fn exit_parking(
         .await
         .map_err(|_| "Greška prilikom provere aktivne sesije.".to_string())?;
 
-    let active_session = active_session.ok_or_else(|| "Korisnik nema aktivnu parking sesiju.".to_string())?;
+    let active_session = active_session
+        .ok_or_else(|| "Korisnik nema aktivnu parking sesiju.".to_string())?;
 
     let exit_time = Local::now().naive_local();
 
@@ -160,17 +161,47 @@ pub async fn exit_parking(
     .await
     .map_err(|_| "Greška prilikom evidentiranja izlaska.".to_string())?;
 
-    let duration_minutes = (completed_session.exit_time.unwrap() - completed_session.entry_time).num_minutes();
+    let duration_minutes =
+        (completed_session.exit_time.unwrap() - completed_session.entry_time).num_minutes();
 
     let billable_hours = ((duration_minutes + 59) / 60).max(1);
 
     let price_per_hour = 100_i64;
     let total_amount = billable_hours * price_per_hour;
 
+    // 🔥 POZIV BILLING SERVISA
+    let client = reqwest::Client::new();
+
+    let request = GenerateInvoiceRequest {
+        session_id: completed_session.id,
+        user_id: completed_session.user_id,
+        reservation_id: Some(completed_session.reservation_id),
+        start_time: completed_session
+            .entry_time
+            .format("%Y-%m-%dT%H:%M:%S")
+            .to_string(),
+        end_time: completed_session
+            .exit_time
+            .unwrap()
+            .format("%Y-%m-%dT%H:%M:%S")
+            .to_string(),
+        price_per_hour: price_per_hour as f64,
+    };
+
+    let _ = client
+        .post("http://billing_service:8084/invoices/generate")
+        .json(&request)
+        .send()
+        .await
+        .map_err(|_| "Greška pri pozivu billing servisa.".to_string())?;
+
     Ok(ExitResponse {
         message: "Izlazak evidentiran.".to_string(),
         session_id: completed_session.id,
-        entry_time: completed_session.entry_time.format("%Y-%m-%d %H:%M:%S").to_string(),
+        entry_time: completed_session
+            .entry_time
+            .format("%Y-%m-%d %H:%M:%S")
+            .to_string(),
         exit_time: completed_session
             .exit_time
             .unwrap()
@@ -181,7 +212,6 @@ pub async fn exit_parking(
         total_amount,
     })
 }
-
 
 pub async fn get_parking_history(
     pool: &PgPool,

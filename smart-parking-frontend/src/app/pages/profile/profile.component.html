@@ -241,7 +241,7 @@
     </div>
     <div class="card-box">
       <h3>Istorija parkiranja</h3>
-  
+    
       <div class="form-row">
         <label for="historyStatus">Filter status</label>
         <select id="historyStatus" [(ngModel)]="historyStatusFilter">
@@ -249,12 +249,12 @@
           <option value="Active">Active</option>
           <option value="Completed">Completed</option>
         </select>
-  
+    
         <button (click)="loadParkingHistory()">Filtriraj</button>
       </div>
-  
+    
       <p *ngIf="historyMessage">{{ historyMessage }}</p>
-  
+    
       <table *ngIf="historyItems.length > 0">
         <thead>
           <tr>
@@ -269,7 +269,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of historyItems">
+          <tr *ngFor="let item of paginatedHistoryItems">
             <td>{{ item.session_id }}</td>
             <td>{{ item.vehicle_id }}</td>
             <td>{{ item.parking_spot_id }}</td>
@@ -281,7 +281,19 @@
           </tr>
         </tbody>
       </table>
-  
+    
+      <div class="pagination" *ngIf="historyItems.length > 0">
+        <button (click)="previousPage()" [disabled]="currentPage === 1">
+          Prethodna
+        </button>
+    
+        <span>Stranica {{ currentPage }} / {{ totalPages }}</span>
+    
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages">
+          Sledeća
+        </button>
+      </div>
+    
       <p *ngIf="historyItems.length === 0">Nema stavki u istoriji.</p>
     </div>
 

@@ -46,12 +46,11 @@ async fn main() {
 
     let app = create_routes(state).layer(cors);
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     let listener = tokio::net::TcpListener::bind(addr)
         .await
         .expect("Ne mogu da bindujem port");
 
-    println!("Server pokrenut na http://127.0.0.1:3000");
 
     axum::serve(listener, app)
         .await
